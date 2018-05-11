@@ -1,0 +1,146 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class Silah : MonoBehaviour
+{
+    [Header("Bilgi")]
+    public string ad;
+
+    [Header("Mermi")]
+    public float cephane;
+    public float sarjorMermi;
+    public float kalanMermi;
+    public float atesHizi;
+    float atesZamani;
+    public float mermiHiz = 100;
+    bool ates;
+    public float menzil;
+    public AudioClip ateSesi;
+    public Rigidbody mermi;
+    public Transform mermiPoz;
+
+    [Header("Mermi Degisme")]
+    bool mermiDegisme;
+    float mermiDegismeZaman;
+    public float mermiDegismeMaxZaman;
+    public AudioClip mermiDegismeSesi;
+
+    [Header("Particle")]
+    public ParticleSystem alev;
+
+    [Header("Yazilar")]
+    public Text kalanYaziMermi;
+    public Text toplamYaziMermi;
+
+    public LayerMask katmanlar;
+
+    RaycastHit hit;
+    Animator animasyonlar;
+    AudioSource ses;
+
+    public Vector3 normalPoz = new Vector3(0, -1.804f, 0.224f);
+    Vector3 aimPoz = new Vector3(-0.1454519f, -1.704179f, 0.1740942f);
+    public float aimHiz;
+
+    Camera kamera;
+    public Image aim;//Aim yok edilecek
+    
+
+    void Start()
+    {
+        kamera = Camera.main;
+        animasyonlar = gameObject.GetComponent<Animator> ();
+        ses = gameObject.GetComponent<AudioSource>();
+        kalanYaziMermi.text = kalanMermi.ToString ("00");
+        toplamYaziMermi.text = "/" + cephane.ToString("000");
+    }
+
+    void Update()
+    {
+        //Ateş etme
+        if (Input.GetMouseButton (0) && kalanMermi > 0 && !mermiDegisme && !ates)
+        {
+            kalanMermi--;
+            kalanYaziMermi.text = kalanMermi.ToString("00");
+            ates = true;
+            animasyonlar.SetTrigger("AtesEt");
+            ses.PlayOneShot(ateSesi);
+            alev.Play();
+       
+            if (Physics.Raycast(kamera.transform.position,kamera.transform.forward, out hit, menzil, katmanlar))
+            {
+                Rigidbody gidenMermi;
+                gidenMermi = Instantiate(mermi, mermiPoz.position, mermiPoz.rotation) as Rigidbody;
+                gidenMermi.AddForce(mermiPoz.forward * mermiHiz * Time.deltaTime);
+               // Instantiate(mermiIzi, hit.point, Quaternion.FromToRotation(Vector3.up, hit.normal));
+                
+            }
+        }
+        //tek tek sıkmayı sağlıyoruz tek basışta 2 tane filan sıkmasın diye
+        if(ates)
+        {
+            if(atesZamani > atesHizi)
+            {
+                atesZamani = 0;
+                ates = false;
+            }
+            else
+            {
+                atesZamani += Time.deltaTime;
+            }
+        }
+        // Şarjör Değiştirme
+        if((Input.GetKeyDown (KeyCode.R) || kalanMermi == 0) && !mermiDegisme && cephane > 0 && kalanMermi !=30)
+        {
+            mermiDegisme = true;
+            mermiDegismeZaman = 0;
+            animasyonlar.SetTrigger("MermiDegis");
+            ses.PlayOneShot(mermiDegismeSesi);
+        }
+
+        if(mermiDegisme)
+        {
+            if(mermiDegismeZaman > mermiDegismeMaxZaman)
+            {
+                float harcananMermi = sarjorMermi - kalanMermi;
+                //Eğer cepanemiz bitmeye yakınsa cephaneyi sıfırla
+                if(harcananMermi > cephane)
+                {
+                    kalanMermi += cephane;
+                    cephane = 0;
+                }
+                else
+                {
+                    kalanMermi = sarjorMermi;
+                    cephane -= harcananMermi;
+                }
+
+                mermiDegisme = false;
+                kalanYaziMermi.text = kalanMermi.ToString("00");
+                toplamYaziMermi.text = "/" + cephane.ToString("000");
+            }
+            else
+            {
+                mermiDegismeZaman += Time.deltaTime;
+            }
+        }
+        //zoom ve aim
+        if(Input.GetMouseButton (1) && !mermiDegisme  && !Input.GetKey(KeyCode.LeftShift))
+        {
+            animasyonlar.SetTrigger("zoom");
+            transform.localPosition = Vector3.Slerp(transform.localPosition, aimPoz, aimHiz * Time.deltaTime);
+            kamera.fieldOfView -= 100 * Time.deltaTime;
+            kamera.fieldOfView = Mathf.Clamp(kamera.fieldOfView,5,51);
+            aim.enabled = false;
+        }
+        else
+        {
+            aim.enabled = true;
+            transform.localPosition = Vector3.Slerp(transform.localPosition, normalPoz, aimHiz * Time.deltaTime);
+            kamera.fieldOfView += 100 * Time.deltaTime;
+            kamera.fieldOfView = Mathf.Clamp(kamera.fieldOfView, 5, 51);
+        }
+    }
+}
