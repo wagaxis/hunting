@@ -1,0 +1,228 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class ayızeka : MonoBehaviour {
+
+	public float hiz,mesafe,mesafepig,mesafetilki,mesafekoyun,mesafekurt,mesafetavsan,mesafeGeyik;
+	public bool kos, saldir,yuru,yemek,ölme;
+	public Transform karakter,pig,tilki,koyun,kurt,tavsan,geyik;
+	public int can;
+	Vector3 konum;
+	Vector3 poz,poz2,poz3,poz4,poz5,poz6,poz7,kovalanan;
+	public int x,z;
+
+	void Start () {
+        x = Random.Range(50, 1300);
+        z = Random.Range(-550, 600);
+        can = 150;
+	}
+	
+
+	void Update () {
+		if (can == 0) {
+            if(ölme == true)
+            {
+                GetComponent<Animation>().Play("4LegsDeath");
+                ölme = false;
+            }
+			
+		} else {
+            if (transform.position.x == x && transform.position.z == z)
+            {
+                x = Random.Range(50, 1300);
+                z = Random.Range(-550, 600);
+                konum = new Vector3(x, transform.position.y, z);
+            }
+            else if (transform.position.x < 50 || transform.position.x > 1300 || transform.position.z < -550 || transform.position.z > 600)
+            {
+                x = Random.Range(50, 1300);
+                z = Random.Range(-550, 600);
+                konum = new Vector3(x, transform.position.y, z);
+            }
+            else
+            {
+                konum = new Vector3(x, transform.position.y, z);
+            }
+
+            poz = new Vector3 (karakter.position.x,transform.position.y,karakter.position.z);
+			poz2 = new Vector3 (pig.position.x,transform.position.y,pig.position.z);
+			poz3 = new Vector3 (tilki.position.x,transform.position.y,tilki.position.z);
+			poz4 = new Vector3 (koyun.position.x,transform.position.y,koyun.position.z);
+			poz5 = new Vector3 (kurt.position.x,transform.position.y,kurt.position.z);
+			poz6 = new Vector3 (tavsan.position.x,transform.position.y,tavsan.position.z);
+            poz7 = new Vector3 (geyik.position.x, transform.position.y, geyik.position.z);
+
+            mesafe = Vector3.Distance (transform.position,karakter.position);
+			mesafepig = Vector3.Distance (transform.position, pig.position);
+			mesafetilki = Vector3.Distance (transform.position, tilki.position);
+			mesafekoyun = Vector3.Distance (transform.position, koyun.position);
+			mesafekurt = Vector3.Distance (transform.position, kurt.position);
+			mesafetavsan = Vector3.Distance (transform.position, tavsan.position);
+            mesafeGeyik = Vector3.Distance(transform.position, geyik.position);
+
+            if (mesafe > 30 && mesafepig > 20 && mesafetilki > 20 && mesafekoyun > 20 && mesafekurt > 20 && mesafetavsan > 20 && mesafeGeyik > 20) {
+				yuru = true;
+				kos = false;
+			}
+			pigg ();
+			tilkii ();
+			karakterr ();
+			koyunn ();
+			tavsann ();
+            geyikk();
+
+			if (kos) {
+				hiz = 7;
+				transform.position=Vector3.MoveTowards(transform.position,karakter.position,hiz * Time.deltaTime);
+				transform.LookAt (kovalanan);
+				GetComponent<Animation> ().Play ("run");			
+			}
+			if (saldir==true && kos==false) {
+				hiz = 0;
+				transform.LookAt (poz);
+				GetComponent<Animation> ().Play ("4LegsGetHit");
+			}
+			if (kos==false && yuru==true && mesafe>30 && yemek==false) {
+				hiz = 2;
+				transform.LookAt (konum);
+				transform.position=Vector3.MoveTowards(transform.position,konum,hiz * Time.deltaTime);
+				GetComponent<Animation> ().Play ("walk");
+
+			}
+
+		}
+
+	}
+
+	public void pigg(){
+		if(mesafepig<20){
+			hiz = 7;
+			yemek = true;
+            kos = true;
+            yuru = false;
+            transform.position = Vector3.MoveTowards(transform.position, pig.position, hiz * Time.deltaTime);
+			transform.LookAt (poz2);
+            kovalanan = poz2;
+			GetComponent<Animation> ().Play ("run");
+		}	
+		if (mesafepig > 20) {
+			yemek = false;
+			yuru = true;
+		}
+	}
+	public void tilkii(){
+		if(mesafetilki<20){
+			hiz = 7;
+			yemek = true;
+            kos = true;
+            yuru = false;
+            transform.position=Vector3.MoveTowards(transform.position,tilki.position,hiz * Time.deltaTime);
+			transform.LookAt (poz3);
+            kovalanan = poz3;
+			GetComponent<Animation> ().Play ("run");
+		}
+		if (mesafetilki > 20) {
+			yemek = false;
+			yuru = true;
+		}
+	}
+	public void karakterr(){
+		if(mesafe < 30 && mesafe >3 && yemek == false){
+			kos = true;
+			yuru = false;
+			saldir = false;
+            kos = true;
+            yuru = false;
+            transform.LookAt (poz);
+            kovalanan = poz;
+		}
+		if(mesafe<3){
+			kos = false;
+			saldir = true;
+			yuru = false;
+		}
+	}
+	public void koyunn(){
+		if(mesafekoyun<20){
+			hiz = 7;
+			yemek = true;
+            kos = true;
+            yuru = false;
+            transform.position=Vector3.MoveTowards(transform.position,koyun.position,hiz * Time.deltaTime);
+			transform.LookAt (poz4);
+            kovalanan = poz4;
+			GetComponent<Animation> ().Play ("run");
+		}
+		if (mesafekoyun > 20) {
+			yemek = false;
+			yuru = true;
+		}
+	}
+	public void tavsann(){
+		if(mesafetavsan<20){
+			hiz = 7;
+			yemek = true;
+            kos = true;
+            yuru = false;
+            transform.position=Vector3.MoveTowards(transform.position,tavsan.position,hiz * Time.deltaTime);
+			transform.LookAt (poz6);
+            kovalanan = poz6;
+			GetComponent<Animation> ().Play ("run");
+		}
+		if (mesafetavsan > 20) {
+			yemek = false;
+			yuru = true;
+		}
+	}
+    public void geyikk()
+    {
+        if (mesafeGeyik < 20)
+        {
+            hiz = 7;
+            yemek = true;
+            kos = true;
+            yuru = false;
+            transform.position = Vector3.MoveTowards(transform.position, geyik.position, hiz * Time.deltaTime);
+            transform.LookAt(poz7);
+            kovalanan = poz7;
+            GetComponent<Animation>().Play("run");
+        }
+        if (mesafeGeyik > 20)
+        {
+            yemek = false;
+            yuru = true;
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.tag == "mermi")
+        {
+            if(can < 0 || can == 0)
+            {
+                kos = false;
+                yuru = false;
+                ölme = false;
+            }
+            else
+            {
+                can -= 50;
+                saldir = true;
+                if (can == 0)
+                {
+                    kos = false;
+                    yuru = false;
+                    ölme = true;
+                }
+            }
+        }
+
+        if (collision.gameObject.tag == "default")
+        {
+            x = Random.Range(50, 1300);
+            z = Random.Range(-550, 600);
+            konum = new Vector3(x, transform.position.y, z);
+        }
+    }
+}
