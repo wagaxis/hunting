@@ -1,0 +1,117 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class koyunzeka : MonoBehaviour {
+	
+	public float hiz,mesafe,mesafeaslan,mesafetilki,mesafeayi,mesafekurt;
+	public bool kos,yuru,ölme;
+	public Transform karakter;
+	public Transform Aslan,tilki,ayi,kurt;
+	public int can;
+	Vector3 konum;
+	Vector3 poz;
+	public int x,z;
+
+	void Start () {
+        x = Random.Range(50, 1300);
+        z = Random.Range(-550, 600);
+        can = 100;
+	}
+
+	void Update () {
+
+		if (can == 0)
+        {
+            if(ölme == true)
+            {
+                GetComponent<Animation>().Play("death");
+                ölme = false;
+            }
+            
+		}
+        else {
+            if (transform.position.x == x && transform.position.z == z)
+            {
+                x = Random.Range(50, 1300);
+                z = Random.Range(-550, 600);
+                konum = new Vector3(x, transform.position.y, z);
+            }
+            else if (transform.position.x < 50 || transform.position.x > 1300 || transform.position.z < -550 || transform.position.z > 600)
+            {
+                x = Random.Range(50, 1300);
+                z = Random.Range(-550, 600);
+                konum = new Vector3(x, transform.position.y, z);
+            }
+            else
+            {
+                konum = new Vector3(x, transform.position.y, z);
+            }
+            mesafe = Vector3.Distance (transform.position,karakter.position);
+			mesafeaslan = Vector3.Distance (transform.position, Aslan.position);
+			mesafetilki = Vector3.Distance (transform.position, tilki.position);
+			mesafeayi = Vector3.Distance (transform.position, ayi.position);
+			mesafekurt = Vector3.Distance (transform.position, kurt.position);
+
+			if (mesafe > 20 || mesafeaslan > 30 || mesafetilki > 30) {
+				yuru = true;
+			}
+			if (mesafe < 20 || mesafeaslan < 30 || mesafetilki < 30 || mesafeayi < 30 || mesafekurt < 30) {
+				yuru = false;
+				kos = true;
+			}
+			if(mesafe > 70 && mesafeaslan > 60 && mesafetilki > 60 && mesafeayi > 30 && mesafekurt > 30){
+				kos = false;
+				yuru = true;
+			}
+
+			if (kos) {
+				transform.LookAt (konum);
+				hiz = 11;
+				transform.position=Vector3.MoveTowards(transform.position,konum,hiz * Time.deltaTime);
+				GetComponent<Animation> ().Play ("run");
+
+			}
+			if (kos==false && yuru==true && mesafe>20) {
+				hiz = 1;
+				transform.LookAt (konum);
+				transform.position=Vector3.MoveTowards(transform.position,konum,hiz * Time.deltaTime);
+				GetComponent<Animation> ().Play ("walk");
+
+			}
+		
+		}
+
+	}
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.tag == "mermi")
+        {
+            if (can < 0 || can == 0)
+            {
+                kos = false;
+                yuru = false;
+                ölme = false;
+            }
+            else
+            {
+                can -= 50;
+                kos = true;
+                if (can == 0)
+                {
+                    kos = false;
+                    yuru = false;
+                    ölme = true;
+                }
+            }
+        }
+
+        if (collision.gameObject.tag == "default")
+        {
+            x = Random.Range(50, 1300);
+            z = Random.Range(-550, 600);
+            konum = new Vector3(x, transform.position.y, z);
+        }
+    }
+}
